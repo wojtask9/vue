@@ -32,7 +32,7 @@
     "test:e2e": "npm run build -- vue.min.js && node test/e2e/runner.js",
     "test:weex": "npm run build:weex && jasmine JASMINE_CONFIG_PATH=test/weex/jasmine.json",
     "test:ssr": "npm run build:ssr && jasmine JASMINE_CONFIG_PATH=test/ssr/jasmine.json",
-    "test:ssr-nashorn": "npm run build:ssr-nashorn && jjs.exe ./test/nashorn/jasmine-in-nashorn.js",
+    "test:ssr-nashorn": "npm run build:ssr-nashorn && /opt/oracle-jdk/jdk1.8/bin/jjs ./test/nashorn/jasmine-in-nashorn.js",
     "test:sauce": "npm run sauce -- 0 && npm run sauce -- 1 && npm run sauce -- 2",
     "test:types": "tsc -p ./types/test/tsconfig.json",
     "lint": "eslint src build test",
