@@ -3,6 +3,9 @@ const buble = require('rollup-plugin-buble')
 const alias = require('rollup-plugin-alias')
 const replace = require('rollup-plugin-replace')
 const flow = require('rollup-plugin-flow-no-whitespace')
+const nodeResolve = require('rollup-plugin-node-resolve')
+const commonjs = require('rollup-plugin-commonjs')
+const builtins = require('rollup-plugin-node-builtins')
 const version = process.env.VERSION || require('../package.json').version
 const weexVersion = process.env.WEEX_VERSION || require('../packages/weex-vue-framework/package.json').version
 
@@ -122,7 +125,60 @@ const builds = {
     entry: resolve('server/webpack-plugin/client.js'),
     dest: resolve('packages/vue-server-renderer/client-plugin.js'),
     format: 'cjs',
-    external: Object.keys(require('../packages/vue-server-renderer/package.json').dependencies)
+    external: ['path', 'stream', 'fs', 'serialize-javascript'].concat(Object.keys(require('../packages/vue-server-renderer/package.json').dependencies))
+  },
+  // Web server renderer for Nashorn (UMD).
+  'web-server-renderer-nashorn': {
+    entry: resolve('server/nashorn/server-renderer-nashorn.js'),
+    dest: resolve('packages/vue-server-renderer-nashorn/vue-nashorn.js'),
+    format: 'umd',
+    // external: ['process'],
+    alias: {
+      path: resolve('server/nashorn/nashorn-paths.js'),
+      process: resolve('server/nashorn/nashorn-process.js')
+    },
+    env: 'production',
+    banner: 'var global = this;\n' +
+            'var exports = this;\n',
+    plugins: [
+      nodeResolve({
+        nextjs: true,
+        preferBuiltins: true
+      }),
+      commonjs({
+        include: 'node_modules/**',
+        namedExports: {
+          'node_modules/he/he.js': ['decode', 'escape'],
+          'node_modules/serialize-javascript/index.js': ['serialize']
+        }
+      }),
+      builtins()
+    ]
+  },
+  // Compile nashorn tests (CommonJS).
+  'ssr-nashorn-tests': {
+    entry: resolve('test/nashorn/nashorn-tests-entry.js'),
+    dest: resolve('test/nashorn/ssr-test.spec-nashorn.js'),
+    alias: {
+      '../../packages/vue-server-renderer': resolve('test/nashorn/nashorn-export.js'),
+      '../../dist/vue.runtime.common.js': resolve('test/nashorn/nashorn-export.js')
+    },
+    format: 'umd',
+    context: 'this',
+    plugins: [
+      nodeResolve({
+        nextjs: true,
+        preferBuiltins: true
+      }),
+      commonjs({
+        include: 'node_modules/**',
+        namedExports: {
+          '../packages/vue-server-renderer-nashorn/vue-nashorn.js': ['createRenderer'],
+          'node_modules/serialize-javascript/index.js': ['serialize']
+        }
+      }),
+      builtins()
+    ]
   },
   // Weex runtime factory
   'weex-factory': {
@@ -157,6 +213,7 @@ function genConfig (opts) {
     format: opts.format,
     banner: opts.banner,
     moduleName: 'Vue',
+    context: opts.context,
     plugins: [
       replace({
         __WEEX__: !!opts.weex,

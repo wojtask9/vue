@@ -1,7 +1,9 @@
 /* @flow */
 
-const path = require('path')
-const serialize = require('serialize-javascript')
+// const path = require('path')
+// const serialize = require('serialize-javascript')
+import * as path from 'path'
+import { serialize } from 'serialize-javascript'
 
 import { isJS, isCSS } from '../util'
 import TemplateStream from './template-stream'

@@ -8,12 +8,13 @@
  * Modified by Evan You (@yyx990803)
  */
 
-const stream = require('stream')
+//const stream = require('stream')
+import { Readable } from 'stream'
 
 import { isTrue, isUndef } from 'shared/util'
 import { createWriteFunction } from './write'
 
-export default class RenderStream extends stream.Readable {
+export default class RenderStream extends Readable {
   buffer: string;
   render: (write: Function, done: Function) => void;
   expectedSize: number;

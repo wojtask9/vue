@@ -4,9 +4,12 @@ import { createBundleRunner } from './create-bundle-runner'
 import type { Renderer, RenderOptions } from '../create-renderer'
 import { createSourceMapConsumers, rewriteErrorTrace } from './source-map-support'
 
-const fs = require('fs')
-const path = require('path')
-const PassThrough = require('stream').PassThrough
+// const fs = require('fs')
+// const path = require('path')
+// const PassThrough = require('stream').PassThrough
+import * as fs from 'fs'
+import * as path from 'path'
+import { PassThrough } from 'stream'
 
 const INVALID_MSG =
   'Invalid server-rendering bundle format. Should be a string ' +

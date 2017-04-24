@@ -1,6 +1,7 @@
 /* @flow */
 
-const Transform = require('stream').Transform
+//const Transform = require('stream').Transform
+import { Transform } from 'stream'
 import type TemplateRenderer from './index'
 import type { ParsedTemplate } from './parse-template'
 
