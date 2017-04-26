@@ -1,4 +1,4 @@
-#!/opt/oracle-jdk/jdk1.8/bin/jjs -fv
+#!/usr/bin/jjs
 
 var exports = this
 var module = {
