@@ -113,13 +113,13 @@ const builds = {
     entry: resolve('web/server-renderer.js'),
     dest: resolve('packages/vue-server-renderer/build.js'),
     format: 'cjs',
-    external: Object.keys(require('../packages/vue-server-renderer/package.json').dependencies)
+    external: ['path', 'stream', 'fs', 'serialize-javascript'].concat(Object.keys(require('../packages/vue-server-renderer/package.json').dependencies))
   },
   'web-server-renderer-webpack-server-plugin': {
     entry: resolve('server/webpack-plugin/server.js'),
     dest: resolve('packages/vue-server-renderer/server-plugin.js'),
     format: 'cjs',
-    external: Object.keys(require('../packages/vue-server-renderer/package.json').dependencies)
+    external: ['path', 'stream', 'fs', 'serialize-javascript'].concat(Object.keys(require('../packages/vue-server-renderer/package.json').dependencies))
   },
   'web-server-renderer-webpack-client-plugin': {
     entry: resolve('server/webpack-plugin/client.js'),
@@ -135,7 +135,7 @@ const builds = {
     // external: ['process'],
     alias: {
       path: resolve('server/nashorn/nashorn-paths.js'),
-      process: resolve('server/nashorn/nashorn-process.js')
+      //process: resolve('server/nashorn/nashorn-process.js')
     },
     env: 'production',
     banner: 'var global = this;\n' +

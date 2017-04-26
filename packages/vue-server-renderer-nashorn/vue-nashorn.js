@@ -214,6 +214,231 @@ function initNahorn(context) {
 
 }
 
+// shim for using process in browser
+// based off https://github.com/defunctzombie/node-process/blob/master/browser.js
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+var cachedSetTimeout = defaultSetTimout;
+var cachedClearTimeout = defaultClearTimeout;
+if (typeof global.setTimeout === 'function') {
+    cachedSetTimeout = setTimeout;
+}
+if (typeof global.clearTimeout === 'function') {
+    cachedClearTimeout = clearTimeout;
+}
+
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+function nextTick(fun) {
+    var arguments$1 = arguments;
+
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments$1[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+}
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+var title = 'browser';
+var platform = 'browser';
+var browser = true;
+var env = {};
+var argv = [];
+var version = ''; // empty string to avoid regexp issues
+var versions = {};
+var release = {};
+var config = {};
+
+function noop() {}
+
+var on = noop;
+var addListener = noop;
+var once = noop;
+var off = noop;
+var removeListener = noop;
+var removeAllListeners = noop;
+var emit = noop;
+
+function binding(name) {
+    throw new Error('process.binding is not supported');
+}
+
+function cwd () { return '/' }
+function chdir (dir) {
+    throw new Error('process.chdir is not supported');
+}
+function umask() { return 0; }
+
+// from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
+var performance = global.performance || {};
+var performanceNow =
+  performance.now        ||
+  performance.mozNow     ||
+  performance.msNow      ||
+  performance.oNow       ||
+  performance.webkitNow  ||
+  function(){ return (new Date()).getTime() };
+
+// generate timestamp or delta
+// see http://nodejs.org/api/process.html#process_process_hrtime
+function hrtime(previousTimestamp){
+  var clocktime = performanceNow.call(performance)*1e-3;
+  var seconds = Math.floor(clocktime);
+  var nanoseconds = Math.floor((clocktime%1)*1e9);
+  if (previousTimestamp) {
+    seconds = seconds - previousTimestamp[0];
+    nanoseconds = nanoseconds - previousTimestamp[1];
+    if (nanoseconds<0) {
+      seconds--;
+      nanoseconds += 1e9;
+    }
+  }
+  return [seconds,nanoseconds]
+}
+
+var startTime = new Date();
+function uptime() {
+  var currentTime = new Date();
+  var dif = currentTime - startTime;
+  return dif / 1000;
+}
+
+var process$1 = {
+  nextTick: nextTick,
+  title: title,
+  browser: browser,
+  env: env,
+  argv: argv,
+  version: version,
+  versions: versions,
+  on: on,
+  addListener: addListener,
+  once: once,
+  off: off,
+  removeListener: removeListener,
+  removeAllListeners: removeAllListeners,
+  emit: emit,
+  binding: binding,
+  cwd: cwd,
+  chdir: chdir,
+  umask: umask,
+  hrtime: hrtime,
+  platform: platform,
+  release: release,
+  config: config,
+  uptime: uptime
+};
+
 initNahorn(global);
 
 global.console = {
@@ -221,17 +446,21 @@ global.console = {
   error: print,
   warn: print,
   log: print,
+  trace: print,
   assert: print
 };
 
 global.process = {
   env: {},
+
   nextTick: function (fn) {
     var args = [].slice.call(arguments, 1, arguments.length);
     global.setTimeout(fn, 0, args);
   }
+
 };
 
+global.process = process$1;
 Object.assign = function (target, varArgs) {
   var arguments$1 = arguments;
  // .length of function is 2
@@ -315,7 +544,7 @@ var awaitServer = function (fn) {
   setTimeout(function () {
     fn(done);
   }, 0);
-
+  //nashornEventLoop.process();
   phaser.awaitAdvanceInterruptibly(phaser.arrive());
   return results
 };
@@ -522,7 +751,7 @@ function toObject (arr) {
 /**
  * Perform no operation.
  */
-function noop () {}
+function noop$1 () {}
 
 /**
  * Always return false.
@@ -574,7 +803,7 @@ function looseIndexOf (arr, val) {
 /**
  * Ensure a function is called only once.
  */
-function once (fn) {
+function once$1 (fn) {
   var called = false;
   return function () {
     if (!called) {
@@ -604,131 +833,6 @@ var LIFECYCLE_HOOKS = [
   'activated',
   'deactivated'
 ];
-
-/*  */
-
-var config = ({
-  /**
-   * Option merge strategies (used in core/util/options)
-   */
-  optionMergeStrategies: Object.create(null),
-
-  /**
-   * Whether to suppress warnings.
-   */
-  silent: false,
-
-  /**
-   * Show production mode tip message on boot?
-   */
-  productionTip: "production" !== 'production',
-
-  /**
-   * Whether to enable devtools
-   */
-  devtools: "production" !== 'production',
-
-  /**
-   * Whether to record perf
-   */
-  performance: false,
-
-  /**
-   * Error handler for watcher errors
-   */
-  errorHandler: null,
-
-  /**
-   * Ignore certain custom elements
-   */
-  ignoredElements: [],
-
-  /**
-   * Custom user key aliases for v-on
-   */
-  keyCodes: Object.create(null),
-
-  /**
-   * Check if a tag is reserved so that it cannot be registered as a
-   * component. This is platform-dependent and may be overwritten.
-   */
-  isReservedTag: no,
-
-  /**
-   * Check if an attribute is reserved so that it cannot be used as a component
-   * prop. This is platform-dependent and may be overwritten.
-   */
-  isReservedAttr: no,
-
-  /**
-   * Check if a tag is an unknown element.
-   * Platform-dependent.
-   */
-  isUnknownElement: no,
-
-  /**
-   * Get the namespace of an element
-   */
-  getTagNamespace: noop,
-
-  /**
-   * Parse the real tag name for the specific platform.
-   */
-  parsePlatformTagName: identity,
-
-  /**
-   * Check if an attribute must be bound using property, e.g. value
-   * Platform-dependent.
-   */
-  mustUseProp: no,
-
-  /**
-   * Exposed for legacy reasons
-   */
-  _lifecycleHooks: LIFECYCLE_HOOKS
-});
-
-/*  */
-
-var emptyObject = Object.freeze({});
-
-/**
- * Check if a string starts with $ or _
- */
-function isReserved (str) {
-  var c = (str + '').charCodeAt(0);
-  return c === 0x24 || c === 0x5F
-}
-
-/**
- * Define a property.
- */
-function def (obj, key, val, enumerable) {
-  Object.defineProperty(obj, key, {
-    value: val,
-    enumerable: !!enumerable,
-    writable: true,
-    configurable: true
-  });
-}
-
-/**
- * Parse simple path.
- */
-var bailRE = /[^\w.$]/;
-function parsePath (path) {
-  if (bailRE.test(path)) {
-    return
-  }
-  var segments = path.split('.');
-  return function (obj) {
-    for (var i = 0; i < segments.length; i++) {
-      if (!obj) { return }
-      obj = obj[segments[i]];
-    }
-    return obj
-  }
-}
 
 /*  */
 
@@ -794,7 +898,7 @@ var config$1 = ({
   /**
    * Get the namespace of an element
    */
-  getTagNamespace: noop,
+  getTagNamespace: noop$1,
 
   /**
    * Parse the real tag name for the specific platform.
@@ -813,13 +917,138 @@ var config$1 = ({
   _lifecycleHooks: LIFECYCLE_HOOKS
 });
 
-var warn = noop;
+/*  */
+
+var emptyObject = Object.freeze({});
+
+/**
+ * Check if a string starts with $ or _
+ */
+function isReserved (str) {
+  var c = (str + '').charCodeAt(0);
+  return c === 0x24 || c === 0x5F
+}
+
+/**
+ * Define a property.
+ */
+function def (obj, key, val, enumerable) {
+  Object.defineProperty(obj, key, {
+    value: val,
+    enumerable: !!enumerable,
+    writable: true,
+    configurable: true
+  });
+}
+
+/**
+ * Parse simple path.
+ */
+var bailRE = /[^\w.$]/;
+function parsePath (path) {
+  if (bailRE.test(path)) {
+    return
+  }
+  var segments = path.split('.');
+  return function (obj) {
+    for (var i = 0; i < segments.length; i++) {
+      if (!obj) { return }
+      obj = obj[segments[i]];
+    }
+    return obj
+  }
+}
+
+/*  */
+
+var config$2 = ({
+  /**
+   * Option merge strategies (used in core/util/options)
+   */
+  optionMergeStrategies: Object.create(null),
+
+  /**
+   * Whether to suppress warnings.
+   */
+  silent: false,
+
+  /**
+   * Show production mode tip message on boot?
+   */
+  productionTip: "production" !== 'production',
+
+  /**
+   * Whether to enable devtools
+   */
+  devtools: "production" !== 'production',
+
+  /**
+   * Whether to record perf
+   */
+  performance: false,
+
+  /**
+   * Error handler for watcher errors
+   */
+  errorHandler: null,
+
+  /**
+   * Ignore certain custom elements
+   */
+  ignoredElements: [],
+
+  /**
+   * Custom user key aliases for v-on
+   */
+  keyCodes: Object.create(null),
+
+  /**
+   * Check if a tag is reserved so that it cannot be registered as a
+   * component. This is platform-dependent and may be overwritten.
+   */
+  isReservedTag: no,
+
+  /**
+   * Check if an attribute is reserved so that it cannot be used as a component
+   * prop. This is platform-dependent and may be overwritten.
+   */
+  isReservedAttr: no,
+
+  /**
+   * Check if a tag is an unknown element.
+   * Platform-dependent.
+   */
+  isUnknownElement: no,
+
+  /**
+   * Get the namespace of an element
+   */
+  getTagNamespace: noop$1,
+
+  /**
+   * Parse the real tag name for the specific platform.
+   */
+  parsePlatformTagName: identity,
+
+  /**
+   * Check if an attribute must be bound using property, e.g. value
+   * Platform-dependent.
+   */
+  mustUseProp: no,
+
+  /**
+   * Exposed for legacy reasons
+   */
+  _lifecycleHooks: LIFECYCLE_HOOKS
+});
+
+var warn = noop$1;
 
 var formatComponentName;
 
 function handleError (err, vm, info) {
-  if (config$1.errorHandler) {
-    config$1.errorHandler.call(null, err, vm, info);
+  if (config$2.errorHandler) {
+    config$2.errorHandler.call(null, err, vm, info);
   } else {
     if (inBrowser && typeof console !== 'undefined') {
       console.error(err);
@@ -891,7 +1120,7 @@ var hasSymbol =
 /**
  * Defer a task to execute it asynchronously.
  */
-var nextTick = (function () {
+var nextTick$1 = (function () {
   var callbacks = [];
   var pending = false;
   var timerFunc;
@@ -922,7 +1151,7 @@ var nextTick = (function () {
       // microtask queue but the queue isn't being flushed, until the browser
       // needs to do some other work, e.g. handle a timer. Therefore we can
       // "force" the microtask queue to be flushed by adding an empty timer.
-      if (isIOS) { setTimeout(noop); }
+      if (isIOS) { setTimeout(noop$1); }
     };
   } else if (typeof MutationObserver !== 'undefined' && (
     isNative(MutationObserver) ||
@@ -1432,7 +1661,7 @@ function dependArray (value) {
  * how to merge a parent option value and a child option
  * value into the final value.
  */
-var strats = config$1.optionMergeStrategies;
+var strats = config$2.optionMergeStrategies;
 
 /**
  * Options with restrictions
@@ -2142,7 +2371,7 @@ function resolveAsyncComponent (
       }
     };
 
-    var resolve = once(function (res) {
+    var resolve = once$1(function (res) {
       // cache resolved
       factory.resolved = ensureCtor(res, baseCtor);
       // invoke callbacks only if this is not a synchronous resolve
@@ -2152,7 +2381,7 @@ function resolveAsyncComponent (
       }
     });
 
-    var reject = once(function (reason) {
+    var reject = once$1(function (reason) {
       "production" !== 'production' && warn(
         "Failed to resolve async component: " + (String(factory)) +
         (reason ? ("\nReason: " + reason) : '')
@@ -2627,7 +2856,7 @@ function callHook (vm, hook) {
 
 var MAX_UPDATE_COUNT = 100;
 
-var queue = [];
+var queue$1 = [];
 var activatedChildren = [];
 var has = {};
 var circular = {};
@@ -2639,7 +2868,7 @@ var index = 0;
  * Reset the scheduler's state.
  */
 function resetSchedulerState () {
-  queue.length = activatedChildren.length = 0;
+  queue$1.length = activatedChildren.length = 0;
   has = {};
   waiting = flushing = false;
 }
@@ -2659,12 +2888,12 @@ function flushSchedulerQueue () {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
-  queue.sort(function (a, b) { return a.id - b.id; });
+  queue$1.sort(function (a, b) { return a.id - b.id; });
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  for (index = 0; index < queue.length; index++) {
-    watcher = queue[index];
+  for (index = 0; index < queue$1.length; index++) {
+    watcher = queue$1[index];
     id = watcher.id;
     has[id] = null;
     watcher.run();
@@ -2687,7 +2916,7 @@ function flushSchedulerQueue () {
 
   // keep copies of post queues before resetting state
   var activatedQueue = activatedChildren.slice();
-  var updatedQueue = queue.slice();
+  var updatedQueue = queue$1.slice();
 
   resetSchedulerState();
 
@@ -2697,7 +2926,7 @@ function flushSchedulerQueue () {
 
   // devtool hook
   /* istanbul ignore if */
-  if (devtools && config$1.devtools) {
+  if (devtools && config$2.devtools) {
     devtools.emit('flush');
   }
 }
@@ -2736,20 +2965,20 @@ function queueWatcher (watcher) {
   if (has[id] == null) {
     has[id] = true;
     if (!flushing) {
-      queue.push(watcher);
+      queue$1.push(watcher);
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
-      var i = queue.length - 1;
-      while (i >= 0 && queue[i].id > watcher.id) {
+      var i = queue$1.length - 1;
+      while (i >= 0 && queue$1[i].id > watcher.id) {
         i--;
       }
-      queue.splice(Math.max(i, index) + 1, 0, watcher);
+      queue$1.splice(Math.max(i, index) + 1, 0, watcher);
     }
     // queue the flush
     if (!waiting) {
       waiting = true;
-      nextTick(flushSchedulerQueue);
+      nextTick$1(flushSchedulerQueue);
     }
   }
 }
@@ -2999,8 +3228,8 @@ function _traverse (val, seen) {
 var sharedPropertyDefinition = {
   enumerable: true,
   configurable: true,
-  get: noop,
-  set: noop
+  get: noop$1,
+  set: noop$1
 };
 
 function proxy (target, sourceKey, key) {
@@ -3104,7 +3333,7 @@ function initComputed (vm, computed) {
   for (var key in computed) {
     var userDef = computed[key];
     var getter = typeof userDef === 'function' ? userDef : userDef.get;
-    watchers[key] = new Watcher(vm, getter, noop, computedWatcherOptions);
+    watchers[key] = new Watcher(vm, getter, noop$1, computedWatcherOptions);
 
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
@@ -3118,16 +3347,16 @@ function initComputed (vm, computed) {
 function defineComputed (target, key, userDef) {
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = createComputedGetter(key);
-    sharedPropertyDefinition.set = noop;
+    sharedPropertyDefinition.set = noop$1;
   } else {
     sharedPropertyDefinition.get = userDef.get
       ? userDef.cache !== false
         ? createComputedGetter(key)
         : userDef.get
-      : noop;
+      : noop$1;
     sharedPropertyDefinition.set = userDef.set
       ? userDef.set
-      : noop;
+      : noop$1;
   }
   Object.defineProperty(target, key, sharedPropertyDefinition);
 }
@@ -3150,7 +3379,7 @@ function createComputedGetter (key) {
 function initMethods (vm, methods) {
   var props = vm.$options.props;
   for (var key in methods) {
-    vm[key] = methods[key] == null ? noop : bind(methods[key], vm);
+    vm[key] = methods[key] == null ? noop$1 : bind(methods[key], vm);
     
   }
 }
@@ -3274,7 +3503,7 @@ var hasSymbol$1 =
 /**
  * Defer a task to execute it asynchronously.
  */
-var nextTick$1 = (function () {
+var nextTick$2 = (function () {
   var callbacks = [];
   var pending = false;
   var timerFunc;
@@ -3305,7 +3534,7 @@ var nextTick$1 = (function () {
       // microtask queue but the queue isn't being flushed, until the browser
       // needs to do some other work, e.g. handle a timer. Therefore we can
       // "force" the microtask queue to be flushed by adding an empty timer.
-      if (isIOS$1) { setTimeout(noop); }
+      if (isIOS$1) { setTimeout(noop$1); }
     };
   } else if (typeof MutationObserver !== 'undefined' && (
     isNative$1(MutationObserver) ||
@@ -3496,7 +3725,7 @@ function dedupe$1 (latest, sealed) {
 
 var MAX_UPDATE_COUNT$1 = 100;
 
-var queue$1 = [];
+var queue$2 = [];
 var activatedChildren$1 = [];
 var has$1 = {};
 var circular$1 = {};
@@ -3508,7 +3737,7 @@ var index$1 = 0;
  * Reset the scheduler's state.
  */
 function resetSchedulerState$1 () {
-  queue$1.length = activatedChildren$1.length = 0;
+  queue$2.length = activatedChildren$1.length = 0;
   has$1 = {};
   waiting$1 = flushing$1 = false;
 }
@@ -3528,12 +3757,12 @@ function flushSchedulerQueue$1 () {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
-  queue$1.sort(function (a, b) { return a.id - b.id; });
+  queue$2.sort(function (a, b) { return a.id - b.id; });
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  for (index$1 = 0; index$1 < queue$1.length; index$1++) {
-    watcher = queue$1[index$1];
+  for (index$1 = 0; index$1 < queue$2.length; index$1++) {
+    watcher = queue$2[index$1];
     id = watcher.id;
     has$1[id] = null;
     watcher.run();
@@ -3556,7 +3785,7 @@ function flushSchedulerQueue$1 () {
 
   // keep copies of post queues before resetting state
   var activatedQueue = activatedChildren$1.slice();
-  var updatedQueue = queue$1.slice();
+  var updatedQueue = queue$2.slice();
 
   resetSchedulerState$1();
 
@@ -3566,7 +3795,7 @@ function flushSchedulerQueue$1 () {
 
   // devtool hook
   /* istanbul ignore if */
-  if (devtools && config$1.devtools) {
+  if (devtools && config$2.devtools) {
     devtools.emit('flush');
   }
 }
@@ -3922,11 +4151,11 @@ function _createElement (
   var vnode, ns;
   if (typeof tag === 'string') {
     var Ctor;
-    ns = config$1.getTagNamespace(tag);
-    if (config$1.isReservedTag(tag)) {
+    ns = config$2.getTagNamespace(tag);
+    if (config$2.isReservedTag(tag)) {
       // platform built-in elements
       vnode = new VNode(
-        config$1.parsePlatformTagName(tag), data, children,
+        config$2.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       );
     } else if (isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
@@ -4052,7 +4281,7 @@ function checkKeyCodes (
   key,
   builtInAlias
 ) {
-  var keyCodes = config.keyCodes[key] || builtInAlias;
+  var keyCodes = config$1.keyCodes[key] || builtInAlias;
   if (Array.isArray(keyCodes)) {
     return keyCodes.indexOf(eventKeyCode) === -1
   } else {
@@ -4087,7 +4316,7 @@ function bindObjectProps (
           hash = data;
         } else {
           var type = data.attrs && data.attrs.type;
-          hash = asProp || config.mustUseProp(tag, type, key)
+          hash = asProp || config$1.mustUseProp(tag, type, key)
             ? data.domProps || (data.domProps = {})
             : data.attrs || (data.attrs = {});
         }
@@ -4180,7 +4409,7 @@ function initRender (vm) {
 
 function renderMixin (Vue) {
   Vue.prototype.$nextTick = function (fn) {
-    return nextTick(fn, this)
+    return nextTick$1(fn, this)
   };
 
   Vue.prototype._render = function () {
@@ -4265,7 +4494,7 @@ function initMixin (Vue) {
 
     var startTag, endTag;
     /* istanbul ignore if */
-    if ("production" !== 'production' && config$1.performance && mark$1) {
+    if ("production" !== 'production' && config$2.performance && mark$1) {
       startTag = "vue-perf-init:" + (vm._uid);
       endTag = "vue-perf-end:" + (vm._uid);
       mark$1(startTag);
@@ -4302,7 +4531,7 @@ function initMixin (Vue) {
     callHook(vm, 'created');
 
     /* istanbul ignore if */
-    if ("production" !== 'production' && config$1.performance && mark$1) {
+    if ("production" !== 'production' && config$2.performance && mark$1) {
       vm._name = formatComponentName(vm, false);
       mark$1(endTag);
       measure$1(((vm._name) + " init"), startTag, endTag);
@@ -4653,7 +4882,7 @@ var builtInComponents = {
 function initGlobalAPI (Vue) {
   // config
   var configDef = {};
-  configDef.get = function () { return config$1; };
+  configDef.get = function () { return config$2; };
   Object.defineProperty(Vue, 'config', configDef);
 
   // exposed util methods.
@@ -4668,7 +4897,7 @@ function initGlobalAPI (Vue) {
 
   Vue.set = set;
   Vue.delete = del;
-  Vue.nextTick = nextTick;
+  Vue.nextTick = nextTick$1;
 
   Vue.options = Object.create(null);
   ASSET_TYPES.forEach(function (type) {
@@ -4717,7 +4946,7 @@ function mountComponent$1 (
 
   var updateComponent;
   /* istanbul ignore if */
-  if ("production" !== 'production' && config$1.performance && mark$1) {
+  if ("production" !== 'production' && config$2.performance && mark$1) {
     updateComponent = function () {
       var name = vm._name;
       var id = vm._uid;
@@ -4740,7 +4969,7 @@ function mountComponent$1 (
     };
   }
 
-  vm._watcher = new Watcher(vm, updateComponent, noop);
+  vm._watcher = new Watcher(vm, updateComponent, noop$1);
   hydrating = false;
 
   // manually mounted instance, call mounted on self
@@ -6886,7 +7115,7 @@ function enter (vnode, toggleDisplay) {
   var expectsCSS = css !== false && !isIE9;
   var userWantsControl = getHookArgumentsLength(enterHook);
 
-  var cb = el._enterCb = once(function () {
+  var cb = el._enterCb = once$1(function () {
     if (expectsCSS) {
       removeTransitionClass(el, toClass);
       removeTransitionClass(el, activeClass);
@@ -6989,7 +7218,7 @@ function leave (vnode, rm) {
     checkDuration(explicitLeaveDuration, 'leave', vnode);
   }
 
-  var cb = el._leaveCb = once(function () {
+  var cb = el._leaveCb = once$1(function () {
     if (el.parentNode && el.parentNode._pending) {
       el.parentNode._pending[vnode.key] = null;
     }
@@ -7680,7 +7909,7 @@ extend(Vue$3.options.directives, platformDirectives);
 extend(Vue$3.options.components, platformComponents);
 
 // install platform patch function
-Vue$3.prototype.__patch__ = inBrowser ? patch : noop;
+Vue$3.prototype.__patch__ = inBrowser ? patch : noop$1;
 
 // public mount method
 Vue$3.prototype.$mount = function (
@@ -7694,7 +7923,7 @@ Vue$3.prototype.$mount = function (
 // devtools global hook
 /* istanbul ignore next */
 setTimeout(function () {
-  if (config.devtools) {
+  if (config$1.devtools) {
     if (devtools) {
       devtools.emit('init', Vue$3);
     } else if ("production" !== 'production' && isChrome) {
@@ -7705,7 +7934,7 @@ setTimeout(function () {
     }
   }
   if ("production" !== 'production' &&
-      config.productionTip !== false &&
+      config$1.productionTip !== false &&
       inBrowser && typeof console !== 'undefined') {
     console[console.info ? 'info' : 'log'](
       "You are running Vue in development mode.\n" +
@@ -9501,7 +9730,7 @@ function bind$1 (el, dir) {
 
 var baseDirectives = {
   bind: bind$1,
-  cloak: noop
+  cloak: noop$1
 };
 
 /*  */
@@ -9903,7 +10132,7 @@ function makeFunction (code, errors) {
     return new Function(code)
   } catch (err) {
     errors.push({ err: err, code: code });
-    return noop
+    return noop$1
   }
 }
 
@@ -10135,7 +10364,7 @@ function model$2 (
     genRadioModel$1(el, value, modifiers);
   } else if (tag === 'input' || tag === 'textarea') {
     genDefaultModel$1(el, value, modifiers);
-  } else if (!config.isReservedTag(tag)) {
+  } else if (!config$1.isReservedTag(tag)) {
     genComponentModel(el, value, modifiers);
     // component v-model doesn't need extra runtime
     return false
@@ -10330,7 +10559,7 @@ Vue$3.prototype.$mount = function (
     }
     if (template) {
       /* istanbul ignore if */
-      if ("production" !== 'production' && config.performance && mark) {
+      if ("production" !== 'production' && config$1.performance && mark) {
         mark('compile');
       }
 
@@ -10344,7 +10573,7 @@ Vue$3.prototype.$mount = function (
       options.staticRenderFns = staticRenderFns;
 
       /* istanbul ignore if */
-      if ("production" !== 'production' && config.performance && mark) {
+      if ("production" !== 'production' && config$1.performance && mark) {
         mark('compile end');
         measure(((this._name) + " compile"), 'compile', 'compile end');
       }
@@ -10838,14 +11067,6 @@ function unwrapListeners(arr) {
     ret[i] = arr[i].listener || arr[i];
   }
   return ret;
-}
-
-var process$1 = global.process;
-function nextTick$2 (fn) {
-  var args = [].slice.call(arguments, 1, arguments.length);
-  setTimeout(function() {
-    fn.apply(this, args);
-  }, 0);
 }
 
 var inherits;
@@ -14160,7 +14381,7 @@ function emitReadable(stream) {
   if (!state.emittedReadable) {
     debug('emitReadable', state.flowing);
     state.emittedReadable = true;
-    if (state.sync) { nextTick$2(emitReadable_, stream); }else { emitReadable_(stream); }
+    if (state.sync) { nextTick(emitReadable_, stream); }else { emitReadable_(stream); }
   }
 }
 
@@ -14179,7 +14400,7 @@ function emitReadable_(stream) {
 function maybeReadMore(stream, state) {
   if (!state.readingMore) {
     state.readingMore = true;
-    nextTick$2(maybeReadMore_, stream, state);
+    nextTick(maybeReadMore_, stream, state);
   }
 }
 
@@ -14224,7 +14445,7 @@ Readable$1.prototype.pipe = function (dest, pipeOpts) {
   var doEnd = (!pipeOpts || pipeOpts.end !== false);
 
   var endFn = doEnd ? onend : cleanup;
-  if (state.endEmitted) { nextTick$2(endFn); }else { src.once('end', endFn); }
+  if (state.endEmitted) { nextTick(endFn); }else { src.once('end', endFn); }
 
   dest.on('unpipe', onunpipe);
   function onunpipe(readable) {
@@ -14412,7 +14633,7 @@ Readable$1.prototype.on = function (ev, fn) {
       state.readableListening = state.needReadable = true;
       state.emittedReadable = false;
       if (!state.reading) {
-        nextTick$2(nReadingNextTick, this);
+        nextTick(nReadingNextTick, this);
       } else if (state.length) {
         emitReadable(this, state);
       }
@@ -14443,7 +14664,7 @@ Readable$1.prototype.resume = function () {
 function resume(stream, state) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
-    nextTick$2(resume_, stream, state);
+    nextTick(resume_, stream, state);
   }
 }
 
@@ -14653,7 +14874,7 @@ function endReadable(stream) {
 
   if (!state.endEmitted) {
     state.ended = true;
-    nextTick$2(endReadableNT, state, stream);
+    nextTick(endReadableNT, state, stream);
   }
 }
 
@@ -14833,7 +15054,7 @@ function writeAfterEnd(stream, cb) {
   var er = new Error('write after end');
   // TODO: defer error events consistently everywhere, not just the cb
   stream.emit('error', er);
-  nextTick$2(cb, er);
+  nextTick(cb, er);
 }
 
 // If we get something that is not a buffer, string, null, or undefined,
@@ -14854,7 +15075,7 @@ function validChunk(stream, state, chunk, cb) {
   }
   if (er) {
     stream.emit('error', er);
-    nextTick$2(cb, er);
+    nextTick(cb, er);
     valid = false;
   }
   return valid;
@@ -14954,7 +15175,7 @@ function doWrite(stream, state, writev, len, chunk, encoding, cb) {
 
 function onwriteError(stream, state, sync, er, cb) {
   --state.pendingcb;
-  if (sync) { nextTick$2(cb, er); }else { cb(er); }
+  if (sync) { nextTick(cb, er); }else { cb(er); }
 
   stream._writableState.errorEmitted = true;
   stream.emit('error', er);
@@ -14984,7 +15205,7 @@ function onwrite(stream, er) {
 
     if (sync) {
       /*<replacement>*/
-        nextTick$2(afterWrite, stream, state, finished, cb);
+        nextTick(afterWrite, stream, state, finished, cb);
       /*</replacement>*/
     } else {
         afterWrite(stream, state, finished, cb);
@@ -15126,7 +15347,7 @@ function endWritable(stream, state, cb) {
   state.ending = true;
   finishMaybe(stream, state);
   if (cb) {
-    if (state.finished) { nextTick$2(cb); }else { stream.once('finish', cb); }
+    if (state.finished) { nextTick(cb); }else { stream.once('finish', cb); }
   }
   state.ended = true;
   stream.writable = false;
@@ -15188,7 +15409,7 @@ function onend() {
 
   // no more data can be written.
   // But allow more writes to happen in this tick.
-  nextTick$2(onEndNT, this);
+  nextTick(onEndNT, this);
 }
 
 function onEndNT(self) {
@@ -18859,7 +19080,18 @@ function createRenderer$$1 (options) {
       done(results.error, results.result);
       return results
     },
-    renderToStream: renderer.renderToStream
+    // renderToStream: renderer.renderToStream
+
+    renderToStream: function (component, context) {
+
+      var stream = renderer.renderToStream(component, context);
+      var orig = stream.on;
+      stream.on = function (ev, fn) {
+        // nashornEventLoop.process();
+        orig.apply(stream, arguments);
+      };
+      return stream;
+    }
   }
 }
 

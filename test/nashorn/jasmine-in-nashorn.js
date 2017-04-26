@@ -1,15 +1,15 @@
 #!/opt/oracle-jdk/jdk1.8/bin/jjs -fv
 
-
+var exports = this
 var module = {
     exports : exports
 }
-var exports = this
 
 load('./packages/vue-server-renderer-nashorn/vue-nashorn.js')
 
 exports = {}
 var jasmineRequire = exports
+delete global.process.on;
 load('./node_modules/jasmine-core/lib/jasmine-core/jasmine.js')
 
 function extend (destination, source) {
@@ -45,7 +45,9 @@ env.addReporter({
   },
 
   specDone: function (result) {
-
+    if (result.status === 'passed') {
+      console.log('Passed')
+    }
     for (var i = 0; i < result.failedExpectations.length; i++) {
       console.log('Failure: ' + result.failedExpectations[i].message)
       console.log(result.failedExpectations[i].stack)
