@@ -17,7 +17,7 @@ const awaitServer = (fn) => {
   setTimeout(() => {
     fn(done)
   }, 0)
-
+  //nashornEventLoop.process();
   phaser.awaitAdvanceInterruptibly(phaser.arrive())
   return results
 }

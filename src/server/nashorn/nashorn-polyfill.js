@@ -11,7 +11,7 @@ global.console = {
   trace: print,
   assert: print
 }
-
+/*
 global.process = {
   env: {},
 
@@ -21,7 +21,7 @@ global.process = {
   }
 
 }
-
+*/
 global.process = process;
 Object.assign = function (target, varArgs) { // .length of function is 2
 

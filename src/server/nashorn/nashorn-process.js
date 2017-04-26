@@ -6,3 +6,4 @@ export function nextTick (fn) {
     fn.apply(this, args)
   }, 0);
 }
+global.process.nextTick = nextTick

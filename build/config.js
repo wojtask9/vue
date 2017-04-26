@@ -141,6 +141,11 @@ const builds = {
     banner: 'var global = this;\n' +
             'var exports = this;\n',
     plugins: [
+      replace({
+        values: {
+          'MAX_STACK_DEPTH =': 'MAX_STACK_DEPTH = 190 ||'
+        }
+      }),
       nodeResolve({
         nextjs: true,
         preferBuiltins: true
@@ -153,6 +158,7 @@ const builds = {
         }
       }),
       builtins()
+
     ]
   },
   // Compile nashorn tests (CommonJS).

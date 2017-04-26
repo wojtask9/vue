@@ -35,7 +35,9 @@ function createRenderer (options?: Object = {}): {
       done(results.error, results.result)
       return results
     },
-    renderToStream: renderer.renderToStream
+    renderToStream: function (component, context) {
+      return renderer.renderToStream(component, context)
+    }
   }
 }
 
