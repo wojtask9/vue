@@ -6,9 +6,9 @@ process.env.NODE_ENV = 'production'
 
 import Vue from '../../packages/vue-server-renderer-nashorn/nashorn-export.js'
 import { createRenderer } from '../../packages/vue-server-renderer-nashorn/nashorn-export.js'
-const renderToStream = createRenderer().renderToStream
-
 import { gridComponent } from './common.js'
+
+const renderToStream = createRenderer().renderToStream
 
 console.log('--- renderToStream --- ')
 const self = (global || root)

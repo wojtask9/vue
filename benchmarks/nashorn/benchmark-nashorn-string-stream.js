@@ -106,3 +106,5 @@ stream.on('end', function () {
   console.log(("complete: " + (complete.toFixed(2)) + "ms"));
   console.log();
 });
+
+//import '../nashorn/grid-component.js'
