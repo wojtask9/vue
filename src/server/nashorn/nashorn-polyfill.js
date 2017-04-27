@@ -1,8 +1,6 @@
 import initNashorn from './nashorn-eventloop.js'
 import process from 'process'
 
-initNashorn(global)
-
 global.console = {
   debug: print,
   error: print,
@@ -11,18 +9,11 @@ global.console = {
   trace: print,
   assert: print
 }
-/*
-global.process = {
-  env: {},
 
-  nextTick: function (fn) {
-    var args = [].slice.call(arguments, 1, arguments.length)
-    global.setTimeout(fn, 0, args)
-  }
+global.process = process
 
-}
-*/
-global.process = process;
+initNashorn(global)
+
 Object.assign = function (target, varArgs) { // .length of function is 2
 
   if (target == null) { // TypeError if undefined or null

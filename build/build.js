@@ -8,7 +8,7 @@ if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
 }
 
-let builds = require('./config').getAllBuilds()
+let builds = [].concat(require('./config').getAllBuilds()).concat(require('./config-nashorn').getAllBuilds())
 
 // filter builds via command line arg
 if (process.argv[2]) {
@@ -41,7 +41,8 @@ function build (builds) {
 }
 
 function buildEntry (config) {
-  const isProd = /min\.js$/.test(config.dest)
+  const isProd = /min\.js$/.test(config.dest) || config.uglify
+  delete config.uglify
   return rollup.rollup(config).then(bundle => {
     const code = bundle.generate(config).code
     if (isProd) {

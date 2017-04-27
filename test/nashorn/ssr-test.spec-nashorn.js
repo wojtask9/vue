@@ -1,8 +1,4 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(factory());
-}(this, (function () { 'use strict';
+'use strict';
 
 // this is Hack because I don't want modify ssr*-spec.js files
 
@@ -1058,5 +1054,3 @@ describe('SSR: renderToStream', function () {
     stream2.read(1);
   });
 });
-
-})));

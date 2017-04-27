@@ -17,14 +17,11 @@
     "dev:esm": "rollup -w -c build/config.js --environment TARGET:web-runtime-esm",
     "dev:test": "karma start build/karma.dev.config.js",
     "dev:ssr": "rollup -w -c build/config.js --environment TARGET:web-server-renderer",
-    "dev:ssr-nashorn": "rollup -w -c build/config.js --environment TARGET:web-server-renderer-nashorn",
     "dev:compiler": "rollup -w -c build/config.js --environment TARGET:web-compiler ",
     "dev:weex": "rollup -w -c build/config.js --environment TARGET:weex-framework ",
     "dev:weex:compiler": "rollup -w -c build/config.js --environment TARGET:weex-compiler ",
     "build": "node build/build.js",
     "build:ssr": "npm run build -- vue.runtime.common.js,vue-server-renderer",
-    "build:ssr-nashorn": "npm run build -- vue-server-renderer-nashorn",
-    "build:ssr-nashorn-tests": "npm run build -- ssr-test.spec-nashorn.js",
     "build:weex": "npm run build -- weex-vue-framework,weex-template-compiler",
     "test": "npm run lint && flow check && npm run test:types && npm run test:cover && npm run test:e2e -- --env phantomjs && npm run test:ssr && npm run test:weex",
     "test:unit": "karma start build/karma.unit.config.js",
@@ -41,7 +38,11 @@
     "bench:ssr": "npm run build:ssr && node benchmarks/ssr/renderToString.js && node benchmarks/ssr/renderToStream.js",
     "release": "bash build/release.sh",
     "release:weex": "bash build/release-weex.sh",
-    "install:hooks": "ln -fs ../../build/git-hooks/pre-commit .git/hooks/pre-commit"
+    "install:hooks": "ln -fs ../../build/git-hooks/pre-commit .git/hooks/pre-commit",
+
+    "build:ssr-nashorn": "npm run build -- vue-server-renderer-nashorn",
+    "build:ssr-nashorn-tests": "npm run build -- ssr-test.spec-nashorn.js",
+    "build:ssr-nashorn-benchmark": "npm run build -- benchmark-nashorn-string-stream.js"
   },
   "repository": {
     "type": "git",

@@ -45,10 +45,12 @@ export default function initNahorn(context) {
   var TimerTask = Java.type('java.util.TimerTask');
   var Phaser = Java.type('java.util.concurrent.Phaser');
   var TimeUnit = Java.type('java.util.concurrent.TimeUnit');
+  var Executors = Java.type('java.util.concurrent.Executors')
 
   var System = Java.type('java.lang.System');
 
   var timer = new Timer('jsEventLoop', false);
+  //var scheduler = Executors.newScheduledThreadPool(10)
 
   /**
    * Our global synchronization barrier that we use to register async operations
@@ -100,7 +102,7 @@ export default function initNahorn(context) {
       }
     });
 
-    timer.schedule(task, millis || 0);
+      timer.schedule(task, millis || 0);
 
     return task;
   }
@@ -138,7 +140,7 @@ export default function initNahorn(context) {
       }
     });
 
-    timer.scheduleAtFixedRate(task, millis, millis);
+      timer.scheduleAtFixedRate(task, millis, millis);
 
     return task;
   }

@@ -1,15 +1,10 @@
 #!/usr/bin/jjs
 
-var exports = this
-var module = {
-    exports : exports
-}
-
 load('./packages/vue-server-renderer-nashorn/vue-nashorn.js')
 
-exports = {}
-var jasmineRequire = exports
+
 delete global.process.on;
+var jasmineGlobal = global;
 load('./node_modules/jasmine-core/lib/jasmine-core/jasmine.js')
 
 function extend (destination, source) {
@@ -17,9 +12,9 @@ function extend (destination, source) {
   return destination
 }
 
-var jasmine = jasmineRequire.core(jasmineRequire)
+var jasmine = jasmineGlobal.core(jasmineGlobal)
 var env = jasmine.getEnv()
-var jsm = jasmineRequire.interface(jasmine, env)
+var jsm = jasmineGlobal.interface(jasmine, env)
 
 jasmine.getGlobal().clearTimeout = function (id) {}
 jasmine.getGlobal().setInterval = function (fn, delay) {}
