@@ -1,11 +1,10 @@
 var global = this;
+var module = this;
 var exports = this;
 
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.Vue = global.Vue || {})));
-}(this, (function (exports) { 'use strict';
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
 
 // name: nashorn-async
 // license: MIT (http://opensource.org/licenses/MIT)
@@ -54,10 +53,12 @@ function initNahorn(context) {
   var TimerTask = Java.type('java.util.TimerTask');
   var Phaser = Java.type('java.util.concurrent.Phaser');
   var TimeUnit = Java.type('java.util.concurrent.TimeUnit');
+  var Executors = Java.type('java.util.concurrent.Executors');
 
   var System = Java.type('java.lang.System');
 
   var timer = new Timer('jsEventLoop', false);
+  //var scheduler = Executors.newScheduledThreadPool(10)
 
   /**
    * Our global synchronization barrier that we use to register async operations
@@ -109,7 +110,7 @@ function initNahorn(context) {
       }
     });
 
-    timer.schedule(task, millis || 0);
+      timer.schedule(task, millis || 0);
 
     return task;
   }
@@ -147,7 +148,7 @@ function initNahorn(context) {
       }
     });
 
-    timer.scheduleAtFixedRate(task, millis, millis);
+      timer.scheduleAtFixedRate(task, millis, millis);
 
     return task;
   }
@@ -439,8 +440,6 @@ var process$1 = {
   uptime: uptime
 };
 
-initNahorn(global);
-
 global.console = {
   debug: print,
   error: print,
@@ -449,18 +448,11 @@ global.console = {
   trace: print,
   assert: print
 };
-/*
-global.process = {
-  env: {},
 
-  nextTick: function (fn) {
-    var args = [].slice.call(arguments, 1, arguments.length)
-    global.setTimeout(fn, 0, args)
-  }
-
-}
-*/
 global.process = process$1;
+
+initNahorn(global);
+
 Object.assign = function (target, varArgs) {
   var arguments$1 = arguments;
  // .length of function is 2
@@ -4469,7 +4461,7 @@ Object.defineProperty(Vue$3.prototype, '$isServer', {
   get: isServerRendering
 });
 
-Vue$3.version = '2.3.0-beta.1';
+Vue$3.version = '2.3.0';
 
 /*  */
 
@@ -8495,7 +8487,7 @@ function parse (
       }
       var children = currentParent.children;
       text = inPre || text.trim()
-        ? decodeHTMLCached(text)
+        ? isTextTag(currentParent) ? text : decodeHTMLCached(text)
         // only preserve whitespace if its not right after a starting tag
         : preserveWhitespace && children.length ? ' ' : '';
       if (text) {
@@ -8769,6 +8761,11 @@ function makeAttrsMap (attrs) {
     map[attrs[i].name] = attrs[i].value;
   }
   return map
+}
+
+// for script (e.g. type="x/template") or style, do not decode content
+function isTextTag (el) {
+  return el.tag === 'script' || el.tag === 'style'
 }
 
 function isForbiddenTag (el) {
@@ -18180,7 +18177,3 @@ function createRenderer$$1 (options) {
 
 exports.Vue = Vue$3;
 exports.createRenderer = createRenderer$$1;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
