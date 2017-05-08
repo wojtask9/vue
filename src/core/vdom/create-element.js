@@ -99,7 +99,7 @@ export function _createElement (
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }
-  if (vnode !== undefined) {
+  if (isDef(vnode)) {
     if (ns) applyNS(vnode, ns)
     return vnode
   } else {
@@ -113,7 +113,7 @@ function applyNS (vnode, ns) {
     // use default namespace inside foreignObject
     return
   }
-  if (Array.isArray(vnode.children)) {
+  if (isDef(vnode.children)) {
     for (let i = 0, l = vnode.children.length; i < l; i++) {
       const child = vnode.children[i]
       if (isDef(child.tag) && isUndef(child.ns)) {
