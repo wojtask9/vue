@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import { isNative } from 'core/util/env'
+import { Observer } from 'core/observer/index'
+import { isNative, isObject, hasOwn } from 'core/util/index'
 
 describe('Options provide/inject', () => {
   let injected
@@ -220,6 +221,35 @@ describe('Options provide/inject', () => {
     })
   })
 
+  it('should extend properly', () => {
+    const parent = Vue.extend({
+      template: `<span/>`,
+      inject: ['foo']
+    })
+
+    const child = parent.extend({
+      template: `<span/>`,
+      inject: ['bar'],
+      created () {
+        injected = [this.foo, this.bar]
+      }
+    })
+
+    new Vue({
+      template: `<div><parent/><child/></div>`,
+      provide: {
+        foo: 1,
+        bar: false
+      },
+      components: {
+        parent,
+        child
+      }
+    }).$mount()
+
+    expect(injected).toEqual([1, false])
+  })
+
   it('should warn when injections has been modified', () => {
     const key = 'foo'
     const vm = new Vue({
@@ -239,5 +269,177 @@ describe('Options provide/inject', () => {
       `Avoid mutating an injected value directly since the changes will be ` +
       `overwritten whenever the provided component re-renders. ` +
       `injection being mutated: "${key}"`).toHaveBeenWarned()
+  })
+
+  it('should warn when injections cannot be found', () => {
+    const vm = new Vue({})
+    new Vue({
+      parent: vm,
+      inject: ['foo', 'bar'],
+      created () {}
+    })
+    expect(`Injection "foo" not found`).toHaveBeenWarned()
+    expect(`Injection "bar" not found`).toHaveBeenWarned()
+  })
+
+  it('should not warn when injections can be found', () => {
+    const vm = new Vue({
+      provide: {
+        foo: 1,
+        bar: false,
+        baz: undefined
+      }
+    })
+    new Vue({
+      parent: vm,
+      inject: ['foo', 'bar', 'baz'],
+      created () {}
+    })
+    expect(`Injection "foo" not found`).not.toHaveBeenWarned()
+    expect(`Injection "bar" not found`).not.toHaveBeenWarned()
+    expect(`Injection "baz" not found`).not.toHaveBeenWarned()
+  })
+
+  // Github issue #6008
+  it('should merge provide from mixins (objects)', () => {
+    const mixinA = { provide: { foo: 'foo' }}
+    const mixinB = { provide: { bar: 'bar' }}
+    const child = {
+      inject: ['foo', 'bar'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar]
+      }
+    }
+    new Vue({
+      mixins: [mixinA, mixinB],
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar'])
+  })
+  it('should merge provide from mixins (functions)', () => {
+    const mixinA = { provide: () => ({ foo: 'foo' }) }
+    const mixinB = { provide: () => ({ bar: 'bar' }) }
+    const child = {
+      inject: ['foo', 'bar'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar]
+      }
+    }
+    new Vue({
+      mixins: [mixinA, mixinB],
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar'])
+  })
+  it('should merge provide from mixins (mix of objects and functions)', () => {
+    const mixinA = { provide: { foo: 'foo' }}
+    const mixinB = { provide: () => ({ bar: 'bar' }) }
+    const mixinC = { provide: { baz: 'baz' }}
+    const mixinD = { provide: () => ({ bam: 'bam' }) }
+    const child = {
+      inject: ['foo', 'bar', 'baz', 'bam'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar, this.baz, this.bam]
+      }
+    }
+    new Vue({
+      mixins: [mixinA, mixinB, mixinC, mixinD],
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar', 'baz', 'bam'])
+  })
+  it('should merge provide from mixins and override existing keys', () => {
+    const mixinA = { provide: { foo: 'foo' }}
+    const mixinB = { provide: { foo: 'bar' }}
+    const child = {
+      inject: ['foo'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo]
+      }
+    }
+    new Vue({
+      mixins: [mixinA, mixinB],
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['bar'])
+  })
+  it('should merge provide when Vue.extend', () => {
+    const mixinA = { provide: () => ({ foo: 'foo' }) }
+    const child = {
+      inject: ['foo', 'bar'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar]
+      }
+    }
+    const Ctor = Vue.extend({
+      mixins: [mixinA],
+      provide: { bar: 'bar' },
+      render (h) {
+        return h(child)
+      }
+    })
+
+    new Ctor().$mount()
+
+    expect(injected).toEqual(['foo', 'bar'])
+  })
+
+  // #5913
+  it('should keep the reactive with provide', () => {
+    function isObserver (obj) {
+      if (isObject(obj)) {
+        return hasOwn(obj, '__ob__') && obj.__ob__ instanceof Observer
+      }
+      return false
+    }
+
+    const vm = new Vue({
+      template: `<div><child ref='child'></child></div>`,
+      data () {
+        return {
+          foo: {},
+          $foo: {},
+          foo1: []
+        }
+      },
+      provide () {
+        return {
+          foo: this.foo,
+          $foo: this.$foo,
+          foo1: this.foo1,
+          bar: {},
+          baz: []
+        }
+      },
+      components: {
+        child: {
+          inject: ['foo', '$foo', 'foo1', 'bar', 'baz'],
+          template: `<span/>`
+        }
+      }
+    }).$mount()
+    const child = vm.$refs.child
+    expect(isObserver(child.foo)).toBe(true)
+    expect(isObserver(child.$foo)).toBe(false)
+    expect(isObserver(child.foo1)).toBe(true)
+    expect(isObserver(child.bar)).toBe(false)
+    expect(isObserver(child.baz)).toBe(false)
   })
 })

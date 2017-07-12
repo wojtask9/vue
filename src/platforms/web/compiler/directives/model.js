@@ -40,7 +40,11 @@ export default function model (
     }
   }
 
-  if (tag === 'select') {
+  if (el.component) {
+    genComponentModel(el, value, modifiers)
+    // component v-model doesn't need extra runtime
+    return false
+  } else if (tag === 'select') {
     genSelect(el, value, modifiers)
   } else if (tag === 'input' && type === 'checkbox') {
     genCheckboxModel(el, value, modifiers)
@@ -154,7 +158,7 @@ function genDefaultModel (
 
   addProp(el, 'value', `(${value})`)
   addHandler(el, event, code, null, true)
-  if (trim || number || type === 'number') {
+  if (trim || number) {
     addHandler(el, 'blur', '$forceUpdate()')
   }
 }

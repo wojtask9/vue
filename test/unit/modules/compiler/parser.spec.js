@@ -495,6 +495,21 @@ describe('parser', () => {
     expect(span.children[0].text).toBe(' ')
   })
 
+  // #5992
+  it('ignore the first newline in <pre> tag', function () {
+    const options = extend({}, baseOptions)
+    const ast = parse('<div><pre>\nabc</pre>\ndef<pre>\n\nabc</pre></div>', options)
+    const pre = ast.children[0]
+    expect(pre.children[0].type).toBe(3)
+    expect(pre.children[0].text).toBe('abc')
+    const text = ast.children[1]
+    expect(text.type).toBe(3)
+    expect(text.text).toBe('\ndef')
+    const pre2 = ast.children[2]
+    expect(pre2.children[0].type).toBe(3)
+    expect(pre2.children[0].text).toBe('\nabc')
+  })
+
   it('forgivingly handle < in plain text', () => {
     const options = extend({}, baseOptions)
     const ast = parse('<p>1 < 2 < 3</p>', options)
@@ -530,8 +545,7 @@ describe('parser', () => {
     expect(whitespace.children.length).toBe(1)
     expect(whitespace.children[0].type).toBe(3)
     // textarea is whitespace sensitive
-    expect(whitespace.children[0].text).toBe(`
-        <p>Test 1</p>
+    expect(whitespace.children[0].text).toBe(`        <p>Test 1</p>
         test2
       `)
 
@@ -547,5 +561,28 @@ describe('parser', () => {
     const options = extend({}, baseOptions)
     const ast = parse(`<script type="x/template">&gt;<foo>&lt;</script>`, options)
     expect(ast.children[0].text).toBe(`&gt;<foo>&lt;`)
+  })
+
+  it('should ignore comments', () => {
+    const options = extend({}, baseOptions)
+    const ast = parse(`<div>123<!--comment here--></div>`, options)
+    expect(ast.tag).toBe('div')
+    expect(ast.children.length).toBe(1)
+    expect(ast.children[0].type).toBe(3)
+    expect(ast.children[0].text).toBe('123')
+  })
+
+  it('should kept comments', () => {
+    const options = extend({
+      comments: true
+    }, baseOptions)
+    const ast = parse(`<div>123<!--comment here--></div>`, options)
+    expect(ast.tag).toBe('div')
+    expect(ast.children.length).toBe(2)
+    expect(ast.children[0].type).toBe(3)
+    expect(ast.children[0].text).toBe('123')
+    expect(ast.children[1].type).toBe(3) // parse comment with ASTText
+    expect(ast.children[1].isComment).toBe(true) // parse comment with ASTText
+    expect(ast.children[1].text).toBe('comment here')
   })
 })

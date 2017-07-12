@@ -1,9 +1,9 @@
 /* @flow */
 
 import { genHandlers } from './events'
-import { baseWarn, pluckModuleFunction } from '../helpers'
 import baseDirectives from '../directives/index'
 import { camelize, no, extend } from 'shared/util'
+import { baseWarn, pluckModuleFunction } from '../helpers'
 
 type TransformFunction = (el: ASTElement, code: string) => string;
 type DataGenFunction = (el: ASTElement) => string;
@@ -225,11 +225,11 @@ export function genData (el: ASTElement, state: CodegenState): string {
   }
   // attributes
   if (el.attrs) {
-    data += `attrs:{${genProps(el.attrs, state)}},`
+    data += `attrs:{${genProps(el.attrs)}},`
   }
   // DOM props
   if (el.props) {
-    data += `domProps:{${genProps(el.props, state)}},`
+    data += `domProps:{${genProps(el.props)}},`
   }
   // event handlers
   if (el.events) {
@@ -267,6 +267,10 @@ export function genData (el: ASTElement, state: CodegenState): string {
   // v-bind data wrap
   if (el.wrapData) {
     data = el.wrapData(data)
+  }
+  // v-on data wrap
+  if (el.wrapListeners) {
+    data = el.wrapListeners(data)
   }
   return data
 }
@@ -423,6 +427,8 @@ function needsNormalization (el: ASTElement): boolean {
 function genNode (node: ASTNode, state: CodegenState): string {
   if (node.type === 1) {
     return genElement(node, state)
+  } if (node.type === 3 && node.isComment) {
+    return genComment(node)
   } else {
     return genText(node)
   }
@@ -433,6 +439,10 @@ export function genText (text: ASTText | ASTExpression): string {
     ? text.expression // no need for () because already wrapped in _s()
     : transformSpecialNewlines(JSON.stringify(text.text))
   })`
+}
+
+export function genComment (comment: ASTText): string {
+  return `_e('${comment.text}')`
 }
 
 function genSlot (el: ASTElement, state: CodegenState): string {

@@ -3,6 +3,7 @@
 import config from '../config'
 import Dep from '../observer/dep'
 import Watcher from '../observer/watcher'
+import { isUpdatingChildComponent } from './lifecycle'
 
 import {
   set,
@@ -19,8 +20,10 @@ import {
   hasOwn,
   isReserved,
   handleError,
+  nativeWatch,
   validateProp,
-  isPlainObject
+  isPlainObject,
+  isReservedAttribute
 } from '../util/index'
 
 const sharedPropertyDefinition = {
@@ -51,13 +54,9 @@ export function initState (vm: Component) {
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
-  if (opts.watch) initWatch(vm, opts.watch)
-}
-
-const isReservedProp = {
-  key: 1,
-  ref: 1,
-  slot: 1
+  if (opts.watch && opts.watch !== nativeWatch) {
+    initWatch(vm, opts.watch)
+  }
 }
 
 function checkOptionType (vm: Component, name: string) {
@@ -84,14 +83,14 @@ function initProps (vm: Component, propsOptions: Object) {
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
-      if (isReservedProp[key] || config.isReservedAttr(key)) {
+      if (isReservedAttribute(key) || config.isReservedAttr(key)) {
         warn(
           `"${key}" is a reserved attribute and cannot be used as component prop.`,
           vm
         )
       }
       defineReactive(props, key, value, () => {
-        if (vm.$parent && !observerState.isSettingProps) {
+        if (vm.$parent && !isUpdatingChildComponent) {
           warn(
             `Avoid mutating a prop directly since the value will be ` +
             `overwritten whenever the parent component re-renders. ` +
@@ -130,16 +129,26 @@ function initData (vm: Component) {
   // proxy data on instance
   const keys = Object.keys(data)
   const props = vm.$options.props
+  const methods = vm.$options.methods
   let i = keys.length
   while (i--) {
-    if (props && hasOwn(props, keys[i])) {
+    const key = keys[i]
+    if (process.env.NODE_ENV !== 'production') {
+      if (methods && hasOwn(methods, key)) {
+        warn(
+          `method "${key}" has already been defined as a data property.`,
+          vm
+        )
+      }
+    }
+    if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== 'production' && warn(
-        `The data property "${keys[i]}" is already declared as a prop. ` +
+        `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
-    } else if (!isReserved(keys[i])) {
-      proxy(vm, `_data`, keys[i])
+    } else if (!isReserved(key)) {
+      proxy(vm, `_data`, key)
     }
   }
   // observe data

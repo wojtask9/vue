@@ -41,26 +41,25 @@ function build (builds) {
 }
 
 function buildEntry (config) {
-  const isProd = /min\.js$/.test(config.dest) || config.uglify
+  const isProd = /min\.js$/.test(config.dest)
   delete config.uglify
-  return rollup.rollup(config).then(bundle => {
-    const code = bundle.generate(config).code
-    if (isProd) {
-      var minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
-        fromString: true,
-        output: {
-          screw_ie8: true,
-          ascii_only: true
-        },
-        compress: {
-          pure_funcs: ['makeMap']
-        }
-      }).code
-      return write(config.dest, minified, true)
-    } else {
-      return write(config.dest, code)
-    }
-  })
+  return rollup.rollup(config)
+    .then(bundle => bundle.generate(config))
+    .then(({ code }) => {
+      if (isProd) {
+        var minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
+          output: {
+            ascii_only: true
+          },
+          compress: {
+            pure_funcs: ['makeMap']
+          }
+        }).code
+        return write(config.dest, minified, true)
+      } else {
+        return write(config.dest, code)
+      }
+    })
 }
 
 function write (dest, code, zip) {
