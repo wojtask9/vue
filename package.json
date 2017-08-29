@@ -1,6 +1,6 @@
 {
   "name": "vue",
-  "version": "2.3.3",
+  "version": "2.4.2",
   "description": "Reactive, component-oriented view layer for modern web interfaces.",
   "main": "dist/vue.runtime.common.js",
   "module": "dist/vue.runtime.esm.js",
@@ -38,7 +38,7 @@
     "release": "bash build/release.sh",
     "release:weex": "bash build/release-weex.sh",
     "release:note": "node build/gen-release-note.js",
-    "postinstall": "node build/install-hooks.js",
+    "setup": "node build/install-hooks.js",
     "commit": "git-cz"
 
     "build:ssr-nashorn": "npm run build -- vue-server-renderer-nashorn",

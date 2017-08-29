@@ -6,8 +6,7 @@
   <a href="https://www.npmjs.com/package/vue"><img src="https://img.shields.io/npm/dm/vue.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/vue"><img src="https://img.shields.io/npm/v/vue.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/vue"><img src="https://img.shields.io/npm/l/vue.svg" alt="License"></a>
-  <a href="https://gitter.im/vuejs/vue"><img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" alt="Gitter">
-  <a href="https://discordapp.com/invite/eKWPvZ9"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg" alt="Discord">
+  <a href="https://chat.vuejs.org/"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg" alt="Chat">
   <br>
   <a href="https://saucelabs.com/u/vuejs"><img src="https://saucelabs.com/browser-matrix/vuejs.svg" alt="Sauce Test Status"></a>
 </p>
@@ -23,8 +22,8 @@ Vue.js is an MIT-licensed open source project. Its ongoing development is made p
     <img width="240px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/stdlib.png">
   </a>
   <br><br>
-  <a href="https://www.upyun.com/?utm_source=vue&utm_medium=ad&utm_content=github">
-    <img width="160px" src="https://raw.githubusercontent.com/vuejs/cn.vuejs.org/master/themes/vue/source/images/upyun-small.png">
+  <a href="https://xiaozhuanlan.com">
+    <img width="160px" src="https://raw.githubusercontent.com/vuejs/cn.vuejs.org/master/themes/vue/source/images/xiaozhuanlan.png">
   </a>
   <br><br>
   <a href="https://deepstreamhub.com" target="_blank">
@@ -55,10 +54,6 @@ Vue.js is an MIT-licensed open source project. Its ongoing development is made p
     <img width="120px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/monterail.png">
   </a>
   <br><br>
-  <a href="https://www.trisoft.ro/" target="_blank">
-    <img width="120px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/trisoft.png">
-  </a>
-  <br><br>
   <a href="https://www.2mhost.com/" target="_blank">
     <img width="120px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/2mhost.png">
   </a>
@@ -77,6 +72,10 @@ Vue.js is an MIT-licensed open source project. Its ongoing development is made p
   <br><br>
   <a href="https://component.io/" target="_blank">
     <img width="130px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/component_io.png">
+  </a>
+  <br><br>
+  <a href="https://www.v2ex.com/t/379389" target="_blank">
+    <img width="130px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/v2exer.png">
   </a>
 </p>
 
@@ -98,7 +97,7 @@ To check out live examples and docs, visit [vuejs.org](https://vuejs.org).
 
 ## Questions
 
-For questions and support please use the [Discord chat room](https://vue-land.js.org/), [Gitter chat room](https://gitter.im/vuejs/vue), or [the official forum](http://forum.vuejs.org). The issue list of this repo is **exclusively** for bug reports and feature requests.
+For questions and support please use the [the official forum](http://forum.vuejs.org) or [community chat](https://chat.vuejs.org/). The issue list of this repo is **exclusively** for bug reports and feature requests.
 
 ## Issues
 

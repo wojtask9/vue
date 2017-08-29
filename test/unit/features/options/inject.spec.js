@@ -250,6 +250,68 @@ describe('Options provide/inject', () => {
     expect(injected).toEqual([1, false])
   })
 
+  it('should merge from mixins properly (objects)', () => {
+    const mixinA = { inject: { foo: 'foo' }}
+    const mixinB = { inject: { bar: 'bar' }}
+    const child = {
+      mixins: [mixinA, mixinB],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar]
+      }
+    }
+    new Vue({
+      provide: { foo: 'foo', bar: 'bar', baz: 'baz' },
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar'])
+  })
+
+  it('should merge from mixins properly (arrays)', () => {
+    const mixinA = { inject: ['foo'] }
+    const mixinB = { inject: ['bar'] }
+    const child = {
+      mixins: [mixinA, mixinB],
+      inject: ['baz'],
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar, this.baz]
+      }
+    }
+    new Vue({
+      provide: { foo: 'foo', bar: 'bar', baz: 'baz' },
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar', 'baz'])
+  })
+
+  it('should merge from mixins properly (mix of objects and arrays)', () => {
+    const mixinA = { inject: { foo: 'foo' }}
+    const mixinB = { inject: ['bar'] }
+    const child = {
+      mixins: [mixinA, mixinB],
+      inject: { qux: 'baz' },
+      template: `<span/>`,
+      created () {
+        injected = [this.foo, this.bar, this.qux]
+      }
+    }
+    new Vue({
+      provide: { foo: 'foo', bar: 'bar', baz: 'baz' },
+      render (h) {
+        return h(child)
+      }
+    }).$mount()
+
+    expect(injected).toEqual(['foo', 'bar', 'baz'])
+  })
+
   it('should warn when injections has been modified', () => {
     const key = 'foo'
     const vm = new Vue({
@@ -320,6 +382,7 @@ describe('Options provide/inject', () => {
 
     expect(injected).toEqual(['foo', 'bar'])
   })
+
   it('should merge provide from mixins (functions)', () => {
     const mixinA = { provide: () => ({ foo: 'foo' }) }
     const mixinB = { provide: () => ({ bar: 'bar' }) }
@@ -339,6 +402,7 @@ describe('Options provide/inject', () => {
 
     expect(injected).toEqual(['foo', 'bar'])
   })
+
   it('should merge provide from mixins (mix of objects and functions)', () => {
     const mixinA = { provide: { foo: 'foo' }}
     const mixinB = { provide: () => ({ bar: 'bar' }) }
@@ -360,6 +424,7 @@ describe('Options provide/inject', () => {
 
     expect(injected).toEqual(['foo', 'bar', 'baz', 'bam'])
   })
+
   it('should merge provide from mixins and override existing keys', () => {
     const mixinA = { provide: { foo: 'foo' }}
     const mixinB = { provide: { foo: 'bar' }}
@@ -379,6 +444,7 @@ describe('Options provide/inject', () => {
 
     expect(injected).toEqual(['bar'])
   })
+
   it('should merge provide when Vue.extend', () => {
     const mixinA = { provide: () => ({ foo: 'foo' }) }
     const child = {
@@ -441,5 +507,42 @@ describe('Options provide/inject', () => {
     expect(isObserver(child.foo1)).toBe(true)
     expect(isObserver(child.bar)).toBe(false)
     expect(isObserver(child.baz)).toBe(false)
+  })
+
+  // #6175
+  it('merge provide properly from mixins', () => {
+    const ProvideFooMixin = {
+      provide: {
+        foo: 'foo injected'
+      }
+    }
+
+    const ProvideBarMixin = {
+      provide: {
+        bar: 'bar injected'
+      }
+    }
+
+    const Child = {
+      inject: ['foo', 'bar'],
+      render (h) {
+        return h('div', [`foo: ${this.foo}, `, `bar: ${this.bar}`])
+      }
+    }
+
+    const Parent = {
+      mixins: [ProvideFooMixin, ProvideBarMixin],
+      render (h) {
+        return h(Child)
+      }
+    }
+
+    const vm = new Vue({
+      render (h) {
+        return h(Parent)
+      }
+    }).$mount()
+
+    expect(vm.$el.textContent).toBe(`foo: foo injected, bar: bar injected`)
   })
 })
