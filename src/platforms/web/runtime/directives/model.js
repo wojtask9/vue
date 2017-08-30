@@ -22,14 +22,7 @@ if (isIE9) {
 export default {
   inserted (el, binding, vnode) {
     if (vnode.tag === 'select') {
-      const cb = () => {
-        setSelected(el, binding, vnode.context)
-      }
-      cb()
-      /* istanbul ignore if */
-      if (isIE || isEdge) {
-        setTimeout(cb, 0)
-      }
+      setSelected(el, binding, vnode.context)
       el._vOptions = [].map.call(el.options, getValue)
     } else if (vnode.tag === 'textarea' || isTextInputType(el.type)) {
       el._vModifiers = binding.modifiers
@@ -60,13 +53,30 @@ export default {
       const prevOptions = el._vOptions
       const curOptions = el._vOptions = [].map.call(el.options, getValue)
       if (curOptions.some((o, i) => !looseEqual(o, prevOptions[i]))) {
-        trigger(el, 'change')
+        // trigger change event if
+        // no matching option found for at least one value
+        const needReset = el.multiple
+          ? binding.value.some(v => hasNoMatchingOption(v, curOptions))
+          : binding.value !== binding.oldValue && hasNoMatchingOption(binding.value, curOptions)
+        if (needReset) {
+          trigger(el, 'change')
+        }
       }
     }
   }
 }
 
 function setSelected (el, binding, vm) {
+  actuallySetSelected(el, binding, vm)
+  /* istanbul ignore if */
+  if (isIE || isEdge) {
+    setTimeout(() => {
+      actuallySetSelected(el, binding, vm)
+    }, 0)
+  }
+}
+
+function actuallySetSelected (el, binding, vm) {
   const value = binding.value
   const isMultiple = el.multiple
   if (isMultiple && !Array.isArray(value)) {
@@ -99,6 +109,10 @@ function setSelected (el, binding, vm) {
   if (!isMultiple) {
     el.selectedIndex = -1
   }
+}
+
+function hasNoMatchingOption (value, options) {
+  return options.every(o => !looseEqual(o, value))
 }
 
 function getValue (option) {
