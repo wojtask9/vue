@@ -60,10 +60,6 @@ You can join them in supporting  Vue.js development by [pledging on Patreon](htt
   <img width="240px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/tmvuejs2.png">
 </a>
 <br><br>
-<a href="https://famebroker.com" target="_blank">
-  <img width="260px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/famebroker.png">
-</a>
-<br><br>
 <a href="https://component.io/" target="_blank">
   <img width="260px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/component_io.png">
 </a>
@@ -71,6 +67,41 @@ You can join them in supporting  Vue.js development by [pledging on Patreon](htt
 <a href="https://www.v2ex.com/t/379389" target="_blank">
   <img width="260px" src="https://raw.githubusercontent.com/vuejs/vuejs.org/master/themes/vue/source/images/v2exer.png">
 </a>
+
+---
+
+### Sponsors via [OpenCollective](https://opencollective.com/vuejs#sponsor)
+
+<a href="https://opencollective.com/vuejs/sponsor/0/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/1/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/2/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/3/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/4/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/5/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/6/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/7/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/8/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/9/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/9/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/10/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/10/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/11/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/11/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/12/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/12/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/13/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/13/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/14/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/14/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/15/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/15/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/16/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/16/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/17/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/17/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/18/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/18/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/19/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/19/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/20/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/20/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/21/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/21/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/22/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/22/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/23/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/23/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/24/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/24/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/25/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/25/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/26/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/26/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/27/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/27/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/28/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/28/avatar.svg"></a>
+<a href="https://opencollective.com/vuejs/sponsor/29/website" target="_blank"><img src="https://opencollective.com/vuejs/sponsor/29/avatar.svg"></a>
 
 ---
 
@@ -105,10 +136,14 @@ You can join them in supporting  Vue.js development by [pledging on Patreon](htt
 <a href="https://www.waterfall.com">
   <img width="200px" src="https://waterfall.com/waterfall_logo_large.png">
 </a>
+<br><br>
+<a href="https://vuetifyjs.com">
+  <img width="80px" src="https://vuetifyjs.com/static/doc-images/logo.svg"> Vuetify
+</a>
 
 ---
 
-### $50+
+### $50+ via Patreon
 
 - No Divide Studio
 - James Kyle
@@ -121,10 +156,11 @@ You can join them in supporting  Vue.js development by [pledging on Patreon](htt
 - errorrik
 - Alex Balashov
 - Konstantin Levinski
+- Samuel Smith
 
 ---
 
-### $10+
+### $10+ via Patreon
 
 - Sylvain Pollet-Villard
 - Luca Borghini
@@ -288,3 +324,16 @@ You can join them in supporting  Vue.js development by [pledging on Patreon](htt
 - Raphaël Saunier
 - Kirk Lewis
 - Nicholas Reid
+- Tyler
+- Yong Jun Thong
+- Jonatan Machado
+- Tai Shi Ling
+- Bryan Gruneberg
+- Matthew McMillion
+- Keith Mancuso
+- Alexander Karelas
+- Matias Verdier
+
+## Backers via [OpenCollective](https://opencollective.com/vuejs#backer)
+
+<a href="https://opencollective.com/vuejs#backers" target="_blank"><img src="https://opencollective.com/vuejs/backers.svg?width=890"></a>
