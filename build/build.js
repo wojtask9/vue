@@ -14,12 +14,12 @@ let builds = [].concat(require('./config').getAllBuilds()).concat(require('./con
 if (process.argv[2]) {
   const filters = process.argv[2].split(',')
   builds = builds.filter(b => {
-    return filters.some(f => b.dest.indexOf(f) > -1)
+    return filters.some(f => b.output.file.indexOf(f) > -1)
   })
 } else {
   // filter out weex builds by default
   builds = builds.filter(b => {
-    return b.dest.indexOf('weex') === -1
+    return b.output.file.indexOf('weex') === -1
   })
 }
 
@@ -41,13 +41,15 @@ function build (builds) {
 }
 
 function buildEntry (config) {
-  const isProd = /min\.js$/.test(config.dest)
+  const output = config.output
+  const { file, banner } = output
+  const isProd = /min\.js$/.test(file)
   delete config.uglify
   return rollup.rollup(config)
-    .then(bundle => bundle.generate(config))
+    .then(bundle => bundle.generate(output))
     .then(({ code }) => {
       if (isProd) {
-        var minified = (config.banner ? config.banner + '\n' : '') + uglify.minify(code, {
+        var minified = (banner ? banner + '\n' : '') + uglify.minify(code, {
           output: {
             ascii_only: true
           },
@@ -55,9 +57,9 @@ function buildEntry (config) {
             pure_funcs: ['makeMap']
           }
         }).code
-        return write(config.dest, minified, true)
+        return write(file, minified, true)
       } else {
-        return write(config.dest, code)
+        return write(file, code)
       }
     })
 }

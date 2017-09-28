@@ -86,7 +86,7 @@ export const nextTick = (function () {
   // UIWebView in iOS >= 9.3.3 when triggered in touch event handlers. It
   // completely stops working after triggering a few times... so, if native
   // Promise is available, we will use it:
-  /* istanbul ignore if */
+  /* istanbul ignore if */ // $flow-disable-line
   if (typeof Promise !== 'undefined' && isNative(Promise)) {
     var p = Promise.resolve()
     var logError = err => { console.error(err) }
@@ -99,13 +99,13 @@ export const nextTick = (function () {
       // "force" the microtask queue to be flushed by adding an empty timer.
       if (isIOS) setTimeout(noop)
     }
-  } else if (typeof MutationObserver !== 'undefined' && (
+  } else if (!isIE && typeof MutationObserver !== 'undefined' && (
     isNative(MutationObserver) ||
     // PhantomJS and iOS 7.x
     MutationObserver.toString() === '[object MutationObserverConstructor]'
   )) {
     // use MutationObserver where native Promise is not available,
-    // e.g. PhantomJS IE11, iOS7, Android 4.4
+    // e.g. PhantomJS, iOS7, Android 4.4
     var counter = 1
     var observer = new MutationObserver(nextTickHandler)
     var textNode = document.createTextNode(String(counter))
@@ -141,6 +141,7 @@ export const nextTick = (function () {
       pending = true
       timerFunc()
     }
+    // $flow-disable-line
     if (!cb && typeof Promise !== 'undefined') {
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -150,7 +151,7 @@ export const nextTick = (function () {
 })()
 
 let _Set
-/* istanbul ignore if */
+/* istanbul ignore if */ // $flow-disable-line
 if (typeof Set !== 'undefined' && isNative(Set)) {
   // use native Set when available.
   _Set = Set
